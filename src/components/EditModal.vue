@@ -10,16 +10,35 @@
 
         <div class="user-info-container">
           <div v-for="item in dataOptions" :key="item.key" class="user-info-item">
-            <span class="info-label">{{ item.label }}:</span>
+            <span class="info-label">
+              {{
+                item.key === "celularaluno" && localUserInfos.celularaluno.length > 1
+                  ? "Celulares"
+                  : item.label
+              }}:
+            </span>
+
+            <div v-if="item.key === 'celularaluno'">
+              <input
+                v-for="(cell, index) in localUserInfos.celularaluno"
+                :key="index"
+                v-model="localUserInfos.celularaluno[index]"
+                @keydown.enter="saveEditedValue('celularaluno')"
+                @keydown.esc="cancelEdit('celularaluno')"
+                class="edit-input"
+              />
+            </div>
+
             <input
-              v-if="item.key.startsWith('enderecoaluno')"
+              v-else-if="item.key.startsWith('enderecoaluno')"
               v-model="localUserInfos.enderecoaluno[item.key.split('.')[1]]"
               @keydown.enter="saveEditedValue(item.key)"
               @keydown.esc="cancelEdit(item.key)"
               class="edit-input"
             />
+            
             <input
-              v-if="!item.key.startsWith('enderecoaluno')"
+              v-else
               v-model="localUserInfos[item.key]"
               @keydown.enter="saveEditedValue(item.key)"
               @keydown.esc="cancelEdit(item.key)"
@@ -27,12 +46,14 @@
             />
           </div>
         </div>
+
         <button class="edit-button-small" @click="saveEditedValue()">Salvar</button>
         <button class="edit-button-small" @click="cancelEdit()">Cancelar</button>
       </div>
     </div>
   </div>
 </template>
+
 
 <script>
 export default {

@@ -5,7 +5,7 @@
         <img class="user-icon" src="../assets/user-icon-principal.svg" />
         <div class="user-details">
           <h1 class="user-greeting">
-            Olá,<span class="user-name">{{ userInfos.nomedoaluno }}</span>
+            Olá, <span class="user-name">{{ userInfos.nomedoaluno }}</span>
           </h1>
           <p class="user-email">{{ userInfos.emailaluno }}</p>
         </div>
@@ -18,23 +18,32 @@
 
         <div v-for="(item, index) in dataOptions" :key="item.key">
           <div class="info-block clickable">
-            <span class="info-label">{{ item.label }}</span>
+            <span class="info-label">
+              {{ item.key === 'celularaluno' && userInfos.celularaluno.length > 1 ? 'Celulares' : item.label }}
+            </span>
 
             <div class="info-value-container">
               <p class="info-value">
-                {{
-                  item.key === "cpfaluno" && !cpfVisible
-                    ? "***********"
-                    : item.key.startsWith("enderecoaluno")
-                    ? userInfos.enderecoaluno[item.key.split(".")[1]]
-                    : userInfos[item.key]
-                }}
+                <template v-if="item.key === 'celularaluno'">
+                  <span v-for="(numero, i) in userInfos.celularaluno" :key="i">
+                    {{ numero }}<span v-if="i < userInfos.celularaluno.length - 1">, </span>
+                  </span>
+                </template>
+                <template v-else>
+                  {{
+                    item.key === "cpfaluno" && !cpfVisible
+                      ? "***********"
+                      : item.key.startsWith("enderecoaluno")
+                      ? userInfos.enderecoaluno[item.key.split(".")[1]]
+                      : userInfos[item.key]
+                  }}
+                </template>
               </p>
             </div>
 
             <img
               v-if="item.key === 'cpfaluno'"
-              class="eye-icon"
+              class="eye-icon" 
               :src="
                 cpfVisible
                   ? require('../assets/olho-fechar.svg')
@@ -52,13 +61,13 @@
         @close="closeModal"
         :userInfos="userInfos"
         @update-user-infos="updateUserInfos"
-       
       >
         <p>Edit {{ currentEditLabel }}:</p>
       </EditModal>
     </div>
   </div>
 </template>
+
 
 <script>
 import EditModal from "@/components/EditModal.vue";
@@ -87,7 +96,7 @@ export default {
       currentEditLabel: "",
       userInfos: {
         nomedoaluno: "",
-        celularaluno: "",
+        celularaluno: [],
         cepaluno: "",
         enderecoaluno: {
           logradouro: "",
@@ -116,8 +125,9 @@ export default {
         const userData = response.data;
 
         this.userInfos.nomedoaluno = userData.nome;
-        this.userInfos.celularaluno =
-          userData.telefones[0]?.ddd + " " + userData.telefones[0]?.numero;
+        this.userInfos.celularaluno = userData.telefones.map(
+  telefone => `${telefone.ddd} ${telefone.numero}`
+);
         this.userInfos.cepaluno = userData.endereco?.cep;
         this.userInfos.enderecoaluno.logradouro = userData.endereco?.logradouro;
         this.userInfos.enderecoaluno.numero = userData.endereco?.numero;
