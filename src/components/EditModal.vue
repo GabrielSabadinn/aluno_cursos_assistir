@@ -10,27 +10,25 @@
 
         <div class="user-info-container">
           <div v-for="item in dataOptions" :key="item.key" class="user-info-item">
-            <span class="info-label">{{ item.label }}:</span>              
-                <input v-if='item.key.startsWith("enderecoaluno")'
-                    v-model='localUserInfos.enderecoaluno[item.key.split(".")[1]]'
-                    @keydown.enter="saveEditedValue(item.key)"
-                    @keydown.esc="cancelEdit(item.key)"
-                    class="edit-input"
-                  />
-                  <input v-if='!item.key.startsWith("enderecoaluno")' 
-                    v-model="localUserInfos[item.key]"
-                    @keydown.enter="saveEditedValue(item.key)"
-                    @keydown.esc="cancelEdit(item.key)"
-                    class="edit-input"
-                  />
+            <span class="info-label">{{ item.label }}:</span>
+            <input
+              v-if="item.key.startsWith('enderecoaluno')"
+              v-model="localUserInfos.enderecoaluno[item.key.split('.')[1]]"
+              @keydown.enter="saveEditedValue(item.key)"
+              @keydown.esc="cancelEdit(item.key)"
+              class="edit-input"
+            />
+            <input
+              v-if="!item.key.startsWith('enderecoaluno')"
+              v-model="localUserInfos[item.key]"
+              @keydown.enter="saveEditedValue(item.key)"
+              @keydown.esc="cancelEdit(item.key)"
+              class="edit-input"
+            />
           </div>
         </div>
-        <button class="edit-button-small" @click="saveEditedValue()">
-                Salvar
-              </button>
-              <button class="edit-button-small" @click="cancelEdit()">
-                Cancelar
-              </button>
+        <button class="edit-button-small" @click="saveEditedValue()">Salvar</button>
+        <button class="edit-button-small" @click="cancelEdit()">Cancelar</button>
       </div>
     </div>
   </div>
@@ -41,11 +39,11 @@ export default {
   props: ["userInfos"],
   data() {
     return {
-      cpfVisible:'',
+      cpfVisible: "",
       isModalOpen: false,
       isEditing: {},
-      localUserInfos:{...this.userInfos},
-      editedValues: {enderecoaluno:{}},
+      localUserInfos: { ...this.userInfos },
+      editedValues: { enderecoaluno: {} },
       dataOptions: [
         { key: "nomedoaluno", label: "Nome Completo" },
         { key: "celularaluno", label: "Celular" },
@@ -60,9 +58,10 @@ export default {
       ],
     };
   },
-mounted(){
-  console.log(this.localUserInfos)
-},
+  mounted() {
+    console.log(this.localUserInfos);
+  },
+
   methods: {
     openModal() {
       this.isModalOpen = true;
@@ -73,25 +72,34 @@ mounted(){
       this.isEditing = {};
     },
     startEdit(key) {
-      this.isEditing[key] = true;    
-      if(key.split('.').length >1){
-        console.log(key.split('.')[1])
-        this.editedValues["enderecoaluno"][key.split('.')[1]] =this.userInfos["enderecoaluno"][key.split('.')[1]]
-        console.log(this.editedValues)
-      }else{
-        this.editedValues[key] = this.userInfos[key]
+      this.isEditing[key] = true;
+      if (key.startsWith("enderecoaluno")) {
+        const subKey = key.split(".")[1];
+        this.editedValues.enderecoaluno[subKey] = this.localUserInfos.enderecoaluno[
+          subKey
+        ];
+      } else {
+        this.editedValues[key] = this.localUserInfos[key];
       }
-      
     },
+
     saveEditedValue(key) {
-      console.log(this.editedValues[key])
-      this.$emit("update-user-infos",{"valor":this.editedValues[key],key} );
+      const editedValue = this.editedValues[key];
+
+      if (key.startsWith("enderecoaluno")) {
+        const subKey = key.split(".")[1];
+        this.localUserInfos.enderecoaluno[subKey] = editedValue;
+      } else {
+        this.localUserInfos[key] = editedValue;
+      }
+
+      this.$emit("update-user-infos", { valor: editedValue, key });
       this.isEditing[key] = false;
-      
     },
     cancelEdit(key) {
       this.isEditing[key] = false;
-     // this.editedValues[key] = this.localUserInfos[key];
+      this.editedValues[key] = this.localUserInfos[key];
+      this.closeModal();
     },
   },
 };
@@ -99,10 +107,10 @@ mounted(){
 
 <style lang="css">
 .edit-input {
-    flex-grow: 1;
-    padding: 5px;
-    border-radius: 3px;
-    border: 1px solid #959595;
+  flex-grow: 1;
+  padding: 5px;
+  border-radius: 3px;
+  border: 1px solid #959595;
 }
 .user-modal {
   display: block;
@@ -166,7 +174,9 @@ mounted(){
   flex-grow: 1;
   padding: 5px;
 }
-
+.edit-button:hover {
+  background-color: #45a049;
+}
 .edit-button {
   background-color: #4caf50;
   color: white;

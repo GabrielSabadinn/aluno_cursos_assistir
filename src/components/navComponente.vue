@@ -2,33 +2,49 @@
   <div style="position: fixed; z-index: 9999; width: 100%; background-color: #143d59">
     <div class="navbar">
       <img
-        src="../assets/burger.svg"
+        src="https://www.cursoslefisc.com.br/novocurso/img/burger.svg"
         alt=""
         width="30"
         @click="clickHambur = !clickHambur"
         class="ham"
       />
 
-      <img src="../assets/logonav.svg" />
+      <img src="https://www.cursoslefisc.com.br/novocurso/img/logonav.svg" />
       <ul class="ul1" :style="{ left: clickHambur ? '0px' : '-100%' }">
-        <router-link to="/" style="text-decoration: none; color: inherit">
+        <router-link to="/novocurso" style="text-decoration: none; color: inherit">
           <li class="li1">HOME</li>
         </router-link>
 
-        <li class="li cursos" style="margin-left: 40px">
-          <router-link
-            to="/lefiscCursos/cursoTotal"
-            style="text-decoration: none; color: inherit"
+        <li
+          class="li cursos"
+          style="margin-left: 40px"
+          @mouseover="isCursosHovered = true"
+          @mouseleave="isCursosHovered = false"
+        >
+          <div
+            class="cursos-link"
+            @mouseover="isCursosHovered = true"
+            @mouseleave="isCursosHovered = false"
           >
-            CURSOS
-          </router-link>
-          <img class="rotate-arrow" src="../assets/flexaceta.svg" />
+            <div class="cursos-content">
+              <router-link
+                to="/novocurso/lefiscCursos/cursoTotal"
+                style="text-decoration: none; color: inherit"
+                >CURSOS</router-link
+              >
+              <img
+                class="rotate-arrow"
+                :class="{ hovered: isCursosHovered || isSubmenuOpen }"
+                src="https://www.cursoslefisc.com.br/novocurso/img/flexaceta.svg"
+              />
+            </div>
+          </div>
           <div class="ul">
             <div class="area-curso">
-              <router-link to="/lefiscCursos/cursoTotal">
+              <router-link to="/novocurso/lefiscCursos/cursoTotal">
                 <img
                   style="margin-top: 10px; margin-bottom: 5px; cursor: pointer"
-                  src="../assets/confira_nossa_agenda.svg"
+                  src="https://www.cursoslefisc.com.br/novocurso/img/confira_nossa_agenda.svg"
               /></router-link>
               <ul class="cursos-por-area">
                 <li class="li" style="text-decoration: underline 3px; color: #143d59">
@@ -99,7 +115,7 @@
         <div class="carrinho">
           <img
             class="imagem-carrinho"
-            src="../assets/carrinho-compras-icon.svg"
+            src="https://www.cursoslefisc.com.br/novocurso/img/carrinho-compras-icon.svg"
             style="margin-right: 20px; width: 28px"
           />
           <div
@@ -120,11 +136,15 @@
                     class="divImg"
                     :style="{
                       'background-color':
-                        product.categoria.id == 3
-                          ? '#AF3437E0'
-                          : product.categoria.id == 4
-                          ? '#E59819E5'
-                          : '#007900',
+                        product?.id_categoria == 1
+                          ? '#4A154B'
+                          : product?.id_categoria == 2
+                          ? '#007900'
+                          : product?.id_categoria == 3
+                          ? '#AF3437'
+                          : product?.id_categoria == 4
+                          ? '#F7B733'
+                          : '',
                       width: '54px',
                       height: '54px',
                     }"
@@ -227,7 +247,7 @@
             v-if="getUsuario"
           >
             <img
-              src="../assets/pessoa_buton.svg"
+              src="https://www.cursoslefisc.com.br/novocurso/img/pessoa_buton.svg"
               style="width: 20px; border-radius: 4px"
               alt="Ícone pessoa"
             />
@@ -240,7 +260,7 @@
             v-if="!getUsuario"
           >
             <img
-              src="../assets/icon-fazer-login.svg"
+              src="https://www.cursoslefisc.com.br/novocurso/img/icon-fazer-login.svg"
               style="width: 20px; border-radius: 4px"
               alt="Ícone pessoa"
             />
@@ -260,13 +280,16 @@
                   justify-content: center;
                 "
               >
-                <img src="../assets/user.svg" width="50px" />
+                <img
+                  src="https://www.cursoslefisc.com.br/novocurso/img/user-icon-novo.svg"
+                  alt=""
+                />
               </div>
               <div class="maisinfo-p">
                 <p style="font-size: 16px; font-weight: bold">
-                  João Pedro aetano caetano
+                  {{ getUsuario?.nome }}
                 </p>
-                <p style="font-weight: 400; font-size: 12px">João@lefisc.com</p>
+                <p style="font-weight: 400; font-size: 12px">{{ getUsuario?.email }}</p>
                 <p
                   style="
                     text-decoration: underline;
@@ -285,8 +308,18 @@
                   <div style="background-color: #143d59">
                     <img :src="link.icon" />
                   </div>
+                  <router-link v-if="link.href" :to="link.href" class="custom-link">
+                    {{ link.p }}
+                  </router-link>
                   <p
-                    style="text-decoration: underline; font-size: 16px; margin-left: 5px"
+                    v-else-if="link.action === 'irParaLink'"
+                    @click="irParaLink(link.href)"
+                    style="
+                      text-decoration: underline;
+                      font-size: 16px;
+                      margin-left: 5px;
+                      cursor: pointer;
+                    "
                   >
                     {{ link.p }}
                   </p>
@@ -302,10 +335,11 @@
 
 <script>
 import { mapGetters } from "vuex";
-
+import Cookies from "js-cookie";
 export default {
   data() {
     return {
+      isCursosHovered: false,
       mostrarLogin: true,
       quantidadeCursosNoCarrinho: 1,
       totalPreco: 250,
@@ -315,18 +349,43 @@ export default {
       clickHambur: false,
       boolAreaAluno: false,
       linkLogin: [
-        { icon: require("../assets/icon-meus-dados.svg"), p: "Meus Dados" },
-        { icon: require("../assets/icon-meus-cursos.svg"), p: "Meus Cursos" },
         {
-          icon: require("../assets/icon-historico-compras.svg"),
-          p: "Histórico de Compras",
+          icon: "https://www.cursoslefisc.com.br/novocurso/img/icon-meus-dados.svg",
+          p: "Meus Dados",
+          action: this.irParaLink,
+          href: "/AreaAluno",
         },
-        { icon: require("../assets/icon-mensagens.svg"), p: "Mensagens" },
-        { icon: require("../assets/icon-sair.svg"), p: "Sair" },
+        {
+          icon: "https://www.cursoslefisc.com.br/novocurso/img/icon-meus-cursos.svg",
+          p: "Meus Cursos",
+          action: this.irParaLink,
+          href: "/MeusCursos",
+        },
+        {
+          icon:
+            "https://www.cursoslefisc.com.br/novocurso/img/icon-historico-compras.svg",
+          p: "Histórico de Compras",
+          href: "/HistoricoCompras",
+          action: this.irParaLink,
+        },
+        {
+          icon: "https://www.cursoslefisc.com.br/novocurso/img/icon-mensagens.svg",
+          p: "Mensagens",
+          href: "/Mensagens",
+          action: this.irParaLink,
+        },
+        {
+          icon: "https://www.cursoslefisc.com.br/novocurso/img/icon-sair.svg",
+          p: "Sair",
+          action: this.realizarLogout,
+        },
       ],
     };
   },
   computed: {
+    isSubmenuOpen() {
+      return this.submenuOpen;
+    },
     ...mapGetters(["getUsuario", "getCursosCarrinho"]),
     cursosCarrinhoLimitado() {
       const limiteCaracteres = 50;
@@ -336,7 +395,30 @@ export default {
       return this.cursosCarrinho;
     },
   },
+  mounted() {
+    window.addEventListener("scroll", this.handleScroll);
+  },
+
   methods: {
+    handleScroll() {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollThreshold = 100;
+      if (scrollTop >= scrollThreshold) {
+        document.querySelector(".navbar").classList.add("navbar-expanded");
+      } else {
+        document.querySelector(".navbar").classList.remove("navbar-expanded");
+      }
+    },
+    irParaLink(href) {
+      window.open(href, "_blank");
+    },
+    irParaAluno() {
+      window.location.href = "http://localhost:8080/AreaAluno";
+    },
+    realizarLogout() {
+      Cookies.remove("token_cursos");
+      window.location.reload();
+    },
     irParaCursos() {
       window.scrollTo(0, 0);
       this.$router.push({ name: "curso-total" });
@@ -365,6 +447,39 @@ export default {
 </script>
 
 <style scoped>
+.custom-link {
+  text-decoration: underline;
+  font-size: 16px;
+  margin-left: 5px;
+  cursor: pointer;
+  color: #143d59;
+}
+
+.custom-link:hover {
+  text-decoration: none;
+  color: #fff;
+}
+
+.cursos-content {
+  display: flex;
+  align-items: center;
+}
+.cursos-link:hover .rotate-arrow,
+.hovered {
+  transform: rotate(180deg);
+}
+.rotate-arrow {
+  transition: transform 0.5s ease;
+}
+
+.navbar-scroll {
+  min-height: 80px;
+  transition: font-size 0.3s ease-out;
+}
+.navbar-scroll .ul1 {
+  font-size: 18px;
+  transition: font-size 0.3s ease-out;
+}
 .fazerlogin {
   background-color: #ff9f00;
 }
@@ -566,17 +681,12 @@ export default {
 }
 
 /* */
-.rotate-arrow.hover {
-  transform: rotate(180deg);
-}
+
 .li.cursos {
   display: flex;
   align-items: center;
 }
-.rotate-arrow {
-  transition: transform 0.2s ease-in-out;
-  justify-content: center;
-}
+
 .cursos-por-area {
   display: flex;
   justify-content: flex-start;
@@ -616,7 +726,7 @@ export default {
   color: #143d59;
   width: 100%;
   position: absolute;
-  top: 40px;
+  top: 50px;
   left: 0;
   background-color: #fff;
   flex-direction: row;
@@ -661,7 +771,6 @@ export default {
   background-color: #143d59;
   font-weight: 600;
   z-index: 9999;
-  max-width: 1260px;
 }
 .ul1 {
   display: flex;

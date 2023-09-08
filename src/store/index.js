@@ -15,8 +15,7 @@ const store = new Vuex.Store({
   },
   actions:{
     async fetchDataCursos({commit}){
-      console.log('vindo')
-      await axios.get('https://api.cursoslefisc.com.br/home/cursos/cards')
+      await axios.get('https://www.cursoslefisc.com.br/api/home/cursos/cards')
       .then(response=>{
         for(let item of response.data[0]){
           let dataTpm = item.data_inicio.toString().split('-')
@@ -25,12 +24,21 @@ const store = new Vuex.Store({
         }
         commit('setCursos', response.data[0]);
       })
-
+      .catch(e=>console.log(e))
+    },
+    async fetchPerfilUser({commit}){
+      await axios.get('https://www.cursoslefisc.com.br/api/sandbox/aluno/perfil')
+      .then(response=>{      
+        commit('setUsuario', response.data);
+      })
+      .catch(e=>{
+        console.log(e)
+      })
     }
   },
   mutations: {
     setFiltros(state,curso){
-      console.log(curso)
+      
       let existeModalidade = state.filtros.modalidade.find(e=> e?.modalidade == curso.modalidade)
       if(existeModalidade == undefined){
         state.filtros.modalidade.push({"modalidade":curso.modalidade,"id_modalidade":curso.id_modalidade})
@@ -49,6 +57,9 @@ const store = new Vuex.Store({
     setCarrinho(state,carrinho){
       state.carrinho = carrinho
     },
+    setUsuario(state,usuario){      
+      state.usuario = usuario
+    },
     setCursoCarrinho(state,id){
       let curso = state.cursos.find(e=>e.id == id)
       if(state.carrinho.length == 0){
@@ -60,13 +71,9 @@ const store = new Vuex.Store({
           curso.quantidade = 1
           state.carrinho.push(curso)
         }
-      }
-      console.log(state.carrinho)
+      }      
       localStorage.setItem('carrrinhoCurso',JSON.stringify(state.carrinho))
-    },
-    SET_USUARIO(state, usuario) {
-      state.usuario = usuario;
-    },
+    },    
     setCoutCarrinho(state, countCarrinho) {
       state.countCarrinho = countCarrinho;
     },
@@ -79,6 +86,7 @@ const store = new Vuex.Store({
     getCursos: state => state.cursos,
     getCursosCarrinho: state => state.carrinho,
     getFiltros: state => state.filtros,
+    getUsuario: state => state.usuario
   },
 });
 

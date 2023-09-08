@@ -317,7 +317,7 @@ export default {
     async loadVideos() {
       try {
         const response = await axios.get(
-          "https://api.cursoslefisc.com.br/vimeo/videos/3201"
+          "https://www.cursoslefisc.com.br/api/vimeo/videos/3201"
         );
         console.log("API Response:", response.data);
         this.modules = response.data;

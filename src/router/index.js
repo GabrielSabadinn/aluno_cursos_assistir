@@ -8,7 +8,7 @@ import AreaEmpresa from '../views/AreaEmpresa.vue'
 import carrinhoCompra from '../views/carrinhoCompra.vue'
 const routes = [
   {
-    path: '/',
+    path: '/HistoricoCompras',
     name: 'AlunoPrincipal',
     component: AlunoPrincipal
   },
